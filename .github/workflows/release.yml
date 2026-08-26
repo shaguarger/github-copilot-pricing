@@ -3,9 +3,7 @@ name: Release
 "on":
   push:
     tags:
-      - "v*"
-
-  workflow_dispatch:
+      - 'v*'
 
 permissions:
   contents: write
@@ -16,56 +14,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate integration structure
+      - name: Read version
+        id: version
         run: |
-          test -f custom_components/github_copilot_pricing/manifest.json
-          test -f custom_components/github_copilot_pricing/__init__.py
-          test -f custom_components/github_copilot_pricing/config_flow.py
-          test -f custom_components/github_copilot_pricing/coordinator.py
-          test -f custom_components/github_copilot_pricing/sensor.py
+          VERSION="${GITHUB_REF_NAME}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Validate manifest
-        run: |
-          python - <<'PY'
-          import json
-
-          with open("custom_components/github_copilot_pricing/manifest.json") as f:
-              manifest = json.load(f)
-
-          required = [
-              "domain",
-              "name",
-              "version",
-              "config_flow",
-              "documentation",
-          ]
-
-          missing = [key for key in required if key not in manifest]
-
-          if missing:
-              raise SystemExit(
-                  f"Missing manifest fields: {', '.join(missing)}"
-              )
-
-          print(f"Integration: {manifest['name']}")
-          print(f"Version: {manifest['version']}")
-          print(f"Domain: {manifest['domain']}")
-          PY
-
-      - name: Create integration archive
+      - name: Create ZIP
         run: |
           mkdir -p dist
           cd custom_components
-          zip -r ../dist/github-copilot-pricing.zip github_copilot_pricing
+          zip -r "../dist/github-copilot-pricing.zip" \
+            github_copilot_pricing
 
-      - name: Create GitHub Release
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: GitHub Copilot Pricing ${{ github.ref_name }}
           generate_release_notes: true
-          files: |
-            dist/github-copilot-pricing.zip
+          files: dist/github-copilot-pricing.zip
