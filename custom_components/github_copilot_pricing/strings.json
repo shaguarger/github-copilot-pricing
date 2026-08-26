@@ -1,0 +1,24 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "GitHub Copilot Pricing",
+        "description": "Track GitHub Copilot model prices from the official GitHub Docs pricing data.",
+        "data": {
+          "scan_interval": "Update interval (hours)"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "GitHub Copilot Pricing options",
+        "description": "Choose how often GitHub pricing data is refreshed.",
+        "data": {
+          "scan_interval": "Update interval (hours)"
+        }
+      }
+    }
+  }
+}
