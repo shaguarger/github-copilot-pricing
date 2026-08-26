@@ -1,6 +1,6 @@
 name: Release
 
-on:
+"on":
   push:
     tags:
       - "v*"
@@ -58,12 +58,8 @@ jobs:
       - name: Create integration archive
         run: |
           mkdir -p dist
-
           cd custom_components
-
-          zip -r \
-            "../dist/github-copilot-pricing.zip" \
-            github_copilot_pricing
+          zip -r ../dist/github-copilot-pricing.zip github_copilot_pricing
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
