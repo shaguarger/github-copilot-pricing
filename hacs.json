@@ -1,7 +1,7 @@
 {
   "name": "GitHub Copilot Pricing",
   "content_in_root": false,
-  "filename": "manifest.json",
+  "filename": "github-copilot-pricing.zip",
   "homeassistant": "2025.1.0",
   "render_readme": true,
   "zip_release": true
