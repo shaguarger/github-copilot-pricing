@@ -31,11 +31,12 @@ class GitHubCopilotPricingPanel extends HTMLElement {
         .average { background: color-mix(in srgb, var(--warning-color, #f9a825) 20%, transparent); color: var(--warning-color, #9a6700); }
         .expensive { background: color-mix(in srgb, var(--error-color, #db4437) 16%, transparent); color: var(--error-color, #c62828); }
         .prices { border-top: 1px solid var(--divider-color); }
-        .price { align-items: center; display: grid; grid-template-columns: minmax(72px, 1fr) auto 54px auto; gap: 7px; min-height: 29px; padding: 2px 10px; }
+        .price { align-items: center; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) 62px 54px 58px; column-gap: 8px; min-height: 29px; padding: 2px 10px; }
+        .price:hover, .price:focus-visible { background: color-mix(in srgb, var(--primary-color) 7%, transparent); outline: none; }
         .price + .price { border-top: 1px solid color-mix(in srgb, var(--divider-color) 55%, transparent); }
         .label { color: var(--secondary-text-color); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .value { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
-        .price .indicator { font-size: 9px; padding: 2px 5px; }
+        .value { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+        .price .indicator { box-sizing: border-box; font-size: 9px; padding: 2px 5px; text-align: center; width: 58px; }
         svg { width: 54px; height: 18px; overflow: visible; }
         polyline { fill: none; stroke: var(--primary-color); stroke-width: 2; vector-effect: non-scaling-stroke; }
         .empty { grid-column: 1 / -1; padding: 64px; text-align: center; color: var(--secondary-text-color); }
@@ -46,6 +47,10 @@ class GitHubCopilotPricingPanel extends HTMLElement {
         <section id="models"></section>
       </main>`;
     this.querySelector("#range").addEventListener("change", () => this.loadHistory());
+    this.querySelector("#models").addEventListener("click", (event) => this.openEntity(event));
+    this.querySelector("#models").addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") this.openEntity(event);
+    });
     this.render();
   }
 
@@ -72,13 +77,24 @@ class GitHubCopilotPricingPanel extends HTMLElement {
     target.innerHTML = [...providers].map(([provider, providerModels]) => `<section class="provider-group"><h2>${this.escape(provider)}</h2><div class="provider-models">${providerModels.map(([key, states]) => {
       const model = key.split("|")[1], indicator = overall.get(key);
       const promo = states.some((state) => state.attributes.promotion);
-      return `<article><div class="card-header title"><h3 title="${this.escape(model)}">${this.escape(model)}</h3><span class="tags">${promo ? '<span class="indicator promo">Promo</span>' : ""}<span class="indicator ${indicator.toLowerCase()}">${indicator}</span></span></div><div class="prices">${states.map((state) => { const priceIndicator = prices.get(state.entity_id); return `<div class="price"><span class="label">${this.escape(this.priceField(state))}</span><span class="value">$${this.escape(state.state)}</span><svg viewBox="0 0 100 18" preserveAspectRatio="none" data-entity="${state.entity_id}"><polyline></polyline></svg><span class="indicator ${priceIndicator.toLowerCase()}">${priceIndicator}</span></div>`; }).join("")}</div></article>`;
+      return `<article><div class="card-header title"><h3 title="${this.escape(model)}">${this.escape(model)}</h3><span class="tags">${promo ? '<span class="indicator promo">Promo</span>' : ""}<span class="indicator ${indicator.toLowerCase()}">${indicator}</span></span></div><div class="prices">${states.map((state) => { const priceIndicator = prices.get(state.entity_id); return `<div class="price" data-entity="${state.entity_id}" role="button" tabindex="0"><span class="label">${this.escape(this.priceField(state))}</span><span class="value">$${this.escape(state.state)}</span><svg viewBox="0 0 100 18" preserveAspectRatio="none"><polyline></polyline></svg><span class="indicator ${priceIndicator.toLowerCase()}">${priceIndicator}</span></div>`; }).join("")}</div></article>`;
     }).join("")}</div></section>`).join("") || '<div class="empty">No pricing sensors found.</div>';
     this.loadHistory();
   }
 
   priceField(state) {
     return state.attributes.friendly_name.split(" — ").at(-1);
+  }
+
+  openEntity(event) {
+    const row = event.target.closest(".price[data-entity]");
+    if (!row) return;
+    event.preventDefault();
+    this.dispatchEvent(new CustomEvent("hass-more-info", {
+      detail: { entityId: row.dataset.entity },
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   priceIndicators(models) {
@@ -109,15 +125,15 @@ class GitHubCopilotPricingPanel extends HTMLElement {
   }
 
   async loadHistory() {
-    const charts = [...this.querySelectorAll("svg[data-entity]")];
+    const charts = [...this.querySelectorAll(".price[data-entity] svg")];
     if (!charts.length) return;
     const days = Number(this.querySelector("#range")?.value || 7);
     const start = new Date(Date.now() - days * 86400000).toISOString();
-    const ids = charts.map((chart) => chart.dataset.entity).join(",");
+    const ids = charts.map((chart) => chart.closest(".price").dataset.entity).join(",");
     try {
       const history = await this._hass.callApi("GET", `history/period/${start}?filter_entity_id=${ids}&minimal_response&no_attributes`);
       const byId = new Map(history.map((series) => [series[0]?.entity_id, series]));
-      for (const chart of charts) this.draw(chart, byId.get(chart.dataset.entity) || []);
+      for (const chart of charts) this.draw(chart, byId.get(chart.closest(".price").dataset.entity) || []);
     } catch (_) {
       // Recorder/history may be disabled; current prices remain useful.
     }
