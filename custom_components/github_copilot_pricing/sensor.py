@@ -35,6 +35,11 @@ from .coordinator import (
 )
 
 
+def model_key(provider: str, model: str) -> str:
+    """Return a stable key for a model device."""
+    return slugify(f"{provider}_{model}")
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -115,10 +120,12 @@ class GitHubCopilotPriceSensor(
         )
 
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, "github")},
-            name="GitHub Copilot Pricing",
-            manufacturer="GitHub",
-            model="Copilot model pricing",
+            identifiers={
+                (DOMAIN, model_key(description.provider, description.model))
+            },
+            name=description.model,
+            manufacturer=description.provider.title(),
+            model="GitHub Copilot model",
             configuration_url=GITHUB_DOCS_URL,
         )
 

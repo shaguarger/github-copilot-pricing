@@ -3,10 +3,11 @@
   "name": "GitHub Copilot Pricing",
   "codeowners": ["@shaguarger"],
   "config_flow": true,
+  "dependencies": ["frontend", "http", "panel_custom"],
   "documentation": "https://github.com/shaguarger/github-copilot-pricing",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/shaguarger/github-copilot-pricing/issues",
   "requirements": [],
-  "version": "1.0.7"
+  "version": "1.0.8"
 }
