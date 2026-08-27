@@ -1,4 +1,6 @@
 from custom_components.github_copilot_pricing.coordinator import (
+    model_name,
+    model_promotion,
     normalize_pricing,
     parse_price,
     pricing_key,
@@ -16,6 +18,12 @@ def test_parse_price():
 def test_slugify():
     assert slugify("GPT-5.6 Luna") == "gpt_5_6_luna"
     assert slugify("Long context") == "long_context"
+
+
+def test_model_footnote():
+    source = "GPT-5.6 Sol[^gpt-56-sol-promo]"
+    assert model_name(source) == "GPT-5.6 Sol"
+    assert model_promotion(source) == "gpt-56-sol-promo"
 
 
 def test_pricing_key():
@@ -92,3 +100,12 @@ def test_current_github_pricing_schema():
         }
     ]
     assert len(normalize_pricing(raw)) == 1
+
+
+def test_model_footnote_does_not_change_pricing_key():
+    source = "GPT-5.6 Sol[^gpt-56-sol-promo]"
+    data = normalize_pricing(
+        [{"model": source, "provider": "openai", "input": "$2.00"}]
+    )
+    assert next(iter(data)) == f"openai|{source}|default|not_applicable"
+    assert next(iter(data.values()))["model"] == "GPT-5.6 Sol"

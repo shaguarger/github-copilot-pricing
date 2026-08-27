@@ -17,6 +17,7 @@ from .const import (
     ATTR_MODEL,
     ATTR_NOTES,
     ATTR_PRICE_UNIT,
+    ATTR_PROMOTION,
     ATTR_PROVIDER,
     ATTR_RELEASE_STATUS,
     ATTR_SOURCE,
@@ -163,6 +164,7 @@ class GitHubCopilotPriceSensor(
             ATTR_THRESHOLD: row.get("threshold"),
             ATTR_NOTES: row.get("notes"),
             ATTR_PRICE_UNIT: "USD per 1 million tokens",
+            ATTR_PROMOTION: row.get("promotion"),
             ATTR_SOURCE: "GitHub Copilot",
             ATTR_SOURCE_URL: SOURCE_URL,
         }

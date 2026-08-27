@@ -30,6 +30,7 @@ ATTR_TIER = "tier"
 ATTR_THRESHOLD = "threshold"
 ATTR_NOTES = "notes"
 ATTR_PRICE_UNIT = "price_unit"
+ATTR_PROMOTION = "promotion"
 ATTR_SOURCE = "source"
 ATTR_SOURCE_URL = "source_url"
 PRICE_FIELDS = (

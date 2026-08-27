@@ -23,6 +23,7 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+MODEL_FOOTNOTE = re.compile(r"\[\^([^]]+)\]")
 
 
 def parse_price(value: Any) -> float | None:
@@ -56,6 +57,17 @@ def slugify(value: str) -> str:
     return value.strip("_") or "unknown"
 
 
+def model_name(value: str) -> str:
+    """Remove GitHub Markdown footnotes from a model name."""
+    return MODEL_FOOTNOTE.sub("", value).strip()
+
+
+def model_promotion(value: str) -> str | None:
+    """Return the promotion footnote identifier, if present."""
+    match = MODEL_FOOTNOTE.search(value)
+    return match.group(1) if match and "promo" in match.group(1) else None
+
+
 def pricing_key(item: dict[str, Any]) -> str:
     """Create a stable key for one pricing row."""
     parts = (
@@ -84,7 +96,9 @@ def normalize_pricing(raw: Any) -> dict[str, dict[str, Any]]:
             continue
 
         item = {
-            "model": str(model),
+            "model": model_name(str(model)),
+            "model_source": str(model),
+            "promotion": model_promotion(str(model)),
             "provider": str(provider),
             "release_status": row.get("release_status"),
             "category": row.get("category"),
@@ -97,7 +111,8 @@ def normalize_pricing(raw: Any) -> dict[str, dict[str, Any]]:
             "output": parse_price(row.get("output")),
         }
 
-        key = pricing_key(item)
+        # Keep keys based on GitHub's source value so existing entity IDs stay stable.
+        key = pricing_key({**item, "model": str(model)})
         result[key] = item
 
     if not result:

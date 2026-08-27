@@ -23,6 +23,8 @@ class GitHubCopilotPricingPanel extends HTMLElement {
         article h2 { margin: 0; font-size: 17px; line-height: 1.2; }
         .provider { color: var(--secondary-text-color); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
         .indicator { border-radius: 999px; flex: none; font-size: 10px; font-weight: 600; padding: 3px 7px; }
+        .tags { display: flex; gap: 4px; }
+        .promo { background: color-mix(in srgb, var(--accent-color, #7e57c2) 18%, transparent); color: var(--accent-color, #6a1b9a); }
         .cheap { background: color-mix(in srgb, var(--success-color, #43a047) 18%, transparent); color: var(--success-color, #2e7d32); }
         .average { background: color-mix(in srgb, var(--warning-color, #f9a825) 20%, transparent); color: var(--warning-color, #9a6700); }
         .expensive { background: color-mix(in srgb, var(--error-color, #db4437) 16%, transparent); color: var(--error-color, #c62828); }
@@ -60,7 +62,8 @@ class GitHubCopilotPricingPanel extends HTMLElement {
     target.innerHTML = [...models.entries()].map(([key, states]) => {
       const [provider, model] = key.split("|");
       const indicator = indicators.get(key);
-      return `<article><span class="provider">${this.escape(provider)}</span><div class="title"><h2>${this.escape(model)}</h2><span class="indicator ${indicator.toLowerCase()}">${indicator}</span></div><div class="prices">${states.map((state) => `<div><div class="label">${this.escape(this.priceField(state))}</div><div class="value">$${this.escape(state.state)}</div><svg viewBox="0 0 100 24" preserveAspectRatio="none" data-entity="${state.entity_id}"><polyline></polyline></svg></div>`).join("")}</div></article>`;
+      const promo = states.some((state) => state.attributes.promotion);
+      return `<article><span class="provider">${this.escape(provider)}</span><div class="title"><h2>${this.escape(model)}</h2><span class="tags">${promo ? '<span class="indicator promo">Promo</span>' : ""}<span class="indicator ${indicator.toLowerCase()}">${indicator}</span></span></div><div class="prices">${states.map((state) => `<div><div class="label">${this.escape(this.priceField(state))}</div><div class="value">$${this.escape(state.state)}</div><svg viewBox="0 0 100 24" preserveAspectRatio="none" data-entity="${state.entity_id}"><polyline></polyline></svg></div>`).join("")}</div></article>`;
     }).join("") || '<div class="empty">No pricing sensors found.</div>';
     this.loadHistory();
   }
