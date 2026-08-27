@@ -15,5 +15,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/shaguarger/github-copilot-pricing/issues",
   "requirements": [],
-  "version": "1.0.11"
+  "version": "1.0.12"
 }
