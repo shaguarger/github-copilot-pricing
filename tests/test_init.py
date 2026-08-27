@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import device_registry as dr
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -7,7 +8,11 @@ from custom_components.github_copilot_pricing.const import DOMAIN
 
 
 async def test_setup_creates_sensors(hass):
-    entry = MockConfigEntry(domain=DOMAIN, options={"scan_interval": 6})
+    area = ar.async_get(hass).async_create("Office")
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        options={"scan_interval": 6, "area_id": area.id},
+    )
     entry.add_to_hass(hass)
     pricing = {
         "openai|Example|Default|not_applicable": {
@@ -40,6 +45,7 @@ async def test_setup_creates_sensors(hass):
     assert [(device.name, device.manufacturer) for device in devices] == [
         ("Example", "Openai")
     ]
+    assert all(device.area_id == area.id for device in devices)
     assert "github-copilot-pricing" in hass.data["frontend_panels"]
 
     assert await hass.config_entries.async_unload(entry.entry_id)

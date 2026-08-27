@@ -4,8 +4,9 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 
-from .const import DOMAIN
+from .const import CONF_AREA_ID, DOMAIN
 from .coordinator import GitHubCopilotPricingCoordinator
 from .panel import async_register_panel, async_remove_panel
 
@@ -33,6 +34,11 @@ async def async_setup_entry(
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    if area_id := entry.options.get(CONF_AREA_ID):
+        registry = dr.async_get(hass)
+        for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
+            if device.area_id is None:
+                registry.async_update_device(device.id, area_id=area_id)
     await async_register_panel(hass)
     return True
 

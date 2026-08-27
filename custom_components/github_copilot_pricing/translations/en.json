@@ -5,7 +5,8 @@
         "title": "GitHub Copilot Pricing",
         "description": "Track GitHub Copilot model prices from the official GitHub Docs pricing data.",
         "data": {
-          "scan_interval": "Update interval (hours)"
+          "scan_interval": "Update interval (hours)",
+          "area_id": "Area for model devices"
         }
       }
     }
@@ -16,7 +17,8 @@
         "title": "GitHub Copilot Pricing options",
         "description": "Choose how often GitHub pricing data is refreshed.",
         "data": {
-          "scan_interval": "Update interval (hours)"
+          "scan_interval": "Update interval (hours)",
+          "area_id": "Area for model devices"
         }
       }
     }

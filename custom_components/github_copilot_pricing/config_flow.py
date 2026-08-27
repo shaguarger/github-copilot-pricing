@@ -3,8 +3,10 @@ from __future__ import annotations
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.helpers.selector import AreaSelector
 
 from .const import (
+    CONF_AREA_ID,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL_HOURS,
     DOMAIN,
@@ -40,7 +42,8 @@ class GitHubCopilotPricingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             min=MIN_SCAN_INTERVAL_HOURS,
                             max=MAX_SCAN_INTERVAL_HOURS,
                         ),
-                    )
+                    ),
+                    vol.Optional(CONF_AREA_ID): AreaSelector(),
                 }
             ),
         )
@@ -63,6 +66,12 @@ class GitHubCopilotPricingOptionsFlow(config_entries.OptionsFlow):
         current = self.config_entry.options.get(
             CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL_HOURS
         )
+        area_id = self.config_entry.options.get(CONF_AREA_ID)
+        area = (
+            vol.Optional(CONF_AREA_ID, default=area_id)
+            if area_id
+            else vol.Optional(CONF_AREA_ID)
+        )
 
         return self.async_show_form(
             step_id="init",
@@ -77,7 +86,8 @@ class GitHubCopilotPricingOptionsFlow(config_entries.OptionsFlow):
                             min=MIN_SCAN_INTERVAL_HOURS,
                             max=MAX_SCAN_INTERVAL_HOURS,
                         ),
-                    )
+                    ),
+                    area: AreaSelector(),
                 }
             ),
         )

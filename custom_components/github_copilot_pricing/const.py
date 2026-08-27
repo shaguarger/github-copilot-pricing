@@ -3,6 +3,7 @@ from __future__ import annotations
 
 DOMAIN = "github_copilot_pricing"
 
+CONF_AREA_ID = "area_id"
 CONF_SCAN_INTERVAL = "scan_interval"
 DEFAULT_SCAN_INTERVAL_HOURS = 6
 MIN_SCAN_INTERVAL_HOURS = 1
