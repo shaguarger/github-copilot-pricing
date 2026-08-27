@@ -31,13 +31,13 @@ class GitHubCopilotPricingPanel extends HTMLElement {
         .average { background: color-mix(in srgb, var(--warning-color, #f9a825) 20%, transparent); color: var(--warning-color, #9a6700); }
         .expensive { background: color-mix(in srgb, var(--error-color, #db4437) 16%, transparent); color: var(--error-color, #c62828); }
         .prices { border-top: 1px solid var(--divider-color); }
-        .price { align-items: center; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) 62px 54px 58px; column-gap: 8px; min-height: 29px; padding: 2px 10px; }
+        .price { align-items: center; cursor: pointer; display: grid; grid-template-columns: max-content minmax(16px, 1fr) 62px 58px; column-gap: 8px; min-height: 29px; padding: 2px 10px; }
         .price:hover, .price:focus-visible { background: color-mix(in srgb, var(--primary-color) 7%, transparent); outline: none; }
         .price + .price { border-top: 1px solid color-mix(in srgb, var(--divider-color) 55%, transparent); }
-        .label { color: var(--secondary-text-color); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .label { color: var(--secondary-text-color); font-size: 10px; white-space: nowrap; }
         .value { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
         .price .indicator { box-sizing: border-box; font-size: 9px; padding: 2px 5px; text-align: center; width: 58px; }
-        svg { width: 54px; height: 18px; overflow: visible; }
+        svg { width: 100%; height: 18px; overflow: visible; }
         polyline { fill: none; stroke: var(--primary-color); stroke-width: 2; vector-effect: non-scaling-stroke; }
         .empty { grid-column: 1 / -1; padding: 64px; text-align: center; color: var(--secondary-text-color); }
         @media (max-width: 600px) { main { padding: 16px 10px; } header { align-items: start; flex-direction: column; } }
@@ -77,7 +77,7 @@ class GitHubCopilotPricingPanel extends HTMLElement {
     target.innerHTML = [...providers].map(([provider, providerModels]) => `<section class="provider-group"><h2>${this.escape(provider)}</h2><div class="provider-models">${providerModels.map(([key, states]) => {
       const model = key.split("|")[1], indicator = overall.get(key);
       const promo = states.some((state) => state.attributes.promotion);
-      return `<article><div class="card-header title"><h3 title="${this.escape(model)}">${this.escape(model)}</h3><span class="tags">${promo ? '<span class="indicator promo">Promo</span>' : ""}<span class="indicator ${indicator.toLowerCase()}">${indicator}</span></span></div><div class="prices">${states.map((state) => { const priceIndicator = prices.get(state.entity_id); return `<div class="price" data-entity="${state.entity_id}" role="button" tabindex="0"><span class="label">${this.escape(this.priceField(state))}</span><span class="value">$${this.escape(state.state)}</span><svg viewBox="0 0 100 18" preserveAspectRatio="none"><polyline></polyline></svg><span class="indicator ${priceIndicator.toLowerCase()}">${priceIndicator}</span></div>`; }).join("")}</div></article>`;
+      return `<article><div class="card-header title"><h3 title="${this.escape(model)}">${this.escape(model)}</h3><span class="tags">${promo ? '<span class="indicator promo">Promo</span>' : ""}<span class="indicator ${indicator.toLowerCase()}">${indicator}</span></span></div><div class="prices">${states.map((state) => { const priceIndicator = prices.get(state.entity_id); return `<div class="price" data-entity="${state.entity_id}" role="button" tabindex="0"><span class="label">${this.escape(this.priceField(state))}</span><svg viewBox="0 0 100 18" preserveAspectRatio="none"><polyline></polyline></svg><span class="value">$${this.escape(state.state)}</span><span class="indicator ${priceIndicator.toLowerCase()}">${priceIndicator}</span></div>`; }).join("")}</div></article>`;
     }).join("")}</div></section>`).join("") || '<div class="empty">No pricing sensors found.</div>';
     this.loadHistory();
   }
