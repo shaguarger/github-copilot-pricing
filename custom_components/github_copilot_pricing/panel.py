@@ -4,6 +4,9 @@ from pathlib import Path
 from homeassistant.components import frontend, panel_custom
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.core import HomeAssistant
+from homeassistant.loader import async_get_integration
+
+from .const import DOMAIN
 
 PANEL_PATH = "github-copilot-pricing"
 PANEL_URL = "/github_copilot_pricing/panel.js"
@@ -26,11 +29,12 @@ async def async_register_panel(hass: HomeAssistant) -> None:
             ]
         )
         hass.data[PANEL_STATIC_REGISTERED] = True
+    integration = await async_get_integration(hass, DOMAIN)
     await panel_custom.async_register_panel(
         hass,
         frontend_url_path=PANEL_PATH,
         webcomponent_name="github-copilot-pricing-panel",
-        module_url=PANEL_URL,
+        module_url=f"{PANEL_URL}?v={integration.version}",
         sidebar_title="Copilot Pricing",
         sidebar_icon="mdi:chart-line",
     )

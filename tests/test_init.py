@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 from unittest.mock import patch
 
 from homeassistant.helpers import area_registry as ar
@@ -47,6 +49,13 @@ async def test_setup_creates_sensors(hass):
     ]
     assert all(device.area_id == area.id for device in devices)
     assert "github-copilot-pricing" in hass.data["frontend_panels"]
+    panel = hass.data["frontend_panels"]["github-copilot-pricing"]
+    manifest = json.loads(
+        Path("custom_components/github_copilot_pricing/manifest.json").read_text()
+    )
+    assert panel.config["_panel_custom"]["module_url"].endswith(
+        f"?v={manifest['version']}"
+    )
 
     assert await hass.config_entries.async_unload(entry.entry_id)
     assert "github-copilot-pricing" not in hass.data["frontend_panels"]
