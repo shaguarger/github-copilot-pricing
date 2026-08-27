@@ -17,21 +17,26 @@ class GitHubCopilotPricingPanel extends HTMLElement {
         h1 { margin: 0; font-size: clamp(28px, 3vw, 42px); letter-spacing: -0.04em; }
         p { color: var(--secondary-text-color); margin: 4px 0 0; }
         select { color: inherit; background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 8px; padding: 7px 10px; }
-        #models { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
-        article { background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 12px; padding: 14px; box-shadow: var(--ha-card-box-shadow); }
+        #models { display: grid; gap: 18px; }
+        .provider-group h2 { font-size: 14px; margin: 0 0 7px 2px; text-transform: capitalize; }
+        .provider-models { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+        article { background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 10px; box-shadow: var(--ha-card-box-shadow); overflow: hidden; }
         .title { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
-        article h2 { margin: 0; font-size: 17px; line-height: 1.2; }
-        .provider { color: var(--secondary-text-color); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
+        .card-header { padding: 8px 10px; }
+        article h3 { margin: 0; font-size: 14px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .indicator { border-radius: 999px; flex: none; font-size: 10px; font-weight: 600; padding: 3px 7px; }
         .tags { display: flex; gap: 4px; }
         .promo { background: color-mix(in srgb, var(--accent-color, #7e57c2) 18%, transparent); color: var(--accent-color, #6a1b9a); }
         .cheap { background: color-mix(in srgb, var(--success-color, #43a047) 18%, transparent); color: var(--success-color, #2e7d32); }
         .average { background: color-mix(in srgb, var(--warning-color, #f9a825) 20%, transparent); color: var(--warning-color, #9a6700); }
         .expensive { background: color-mix(in srgb, var(--error-color, #db4437) 16%, transparent); color: var(--error-color, #c62828); }
-        .prices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+        .prices { border-top: 1px solid var(--divider-color); }
+        .price { align-items: center; display: grid; grid-template-columns: minmax(72px, 1fr) auto 54px auto; gap: 7px; min-height: 29px; padding: 2px 10px; }
+        .price + .price { border-top: 1px solid color-mix(in srgb, var(--divider-color) 55%, transparent); }
         .label { color: var(--secondary-text-color); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .value { font-size: 18px; font-variant-numeric: tabular-nums; margin-top: 1px; }
-        svg { width: 100%; height: 24px; margin-top: 3px; overflow: visible; }
+        .value { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .price .indicator { font-size: 9px; padding: 2px 5px; }
+        svg { width: 54px; height: 18px; overflow: visible; }
         polyline { fill: none; stroke: var(--primary-color); stroke-width: 2; vector-effect: non-scaling-stroke; }
         .empty { grid-column: 1 / -1; padding: 64px; text-align: center; color: var(--secondary-text-color); }
         @media (max-width: 600px) { main { padding: 16px 10px; } header { align-items: start; flex-direction: column; } }
@@ -58,13 +63,17 @@ class GitHubCopilotPricingPanel extends HTMLElement {
       result.set(key, [...(result.get(key) || []), state]);
       return result;
     }, new Map());
-    const indicators = this.priceIndicators(models);
-    target.innerHTML = [...models.entries()].map(([key, states]) => {
-      const [provider, model] = key.split("|");
-      const indicator = indicators.get(key);
+    const { overall, prices } = this.priceIndicators(models);
+    const providers = [...models].reduce((result, [key, states]) => {
+      const provider = key.split("|")[0];
+      result.set(provider, [...(result.get(provider) || []), [key, states]]);
+      return result;
+    }, new Map());
+    target.innerHTML = [...providers].map(([provider, providerModels]) => `<section class="provider-group"><h2>${this.escape(provider)}</h2><div class="provider-models">${providerModels.map(([key, states]) => {
+      const model = key.split("|")[1], indicator = overall.get(key);
       const promo = states.some((state) => state.attributes.promotion);
-      return `<article><span class="provider">${this.escape(provider)}</span><div class="title"><h2>${this.escape(model)}</h2><span class="tags">${promo ? '<span class="indicator promo">Promo</span>' : ""}<span class="indicator ${indicator.toLowerCase()}">${indicator}</span></span></div><div class="prices">${states.map((state) => `<div><div class="label">${this.escape(this.priceField(state))}</div><div class="value">$${this.escape(state.state)}</div><svg viewBox="0 0 100 24" preserveAspectRatio="none" data-entity="${state.entity_id}"><polyline></polyline></svg></div>`).join("")}</div></article>`;
-    }).join("") || '<div class="empty">No pricing sensors found.</div>';
+      return `<article><div class="card-header title"><h3 title="${this.escape(model)}">${this.escape(model)}</h3><span class="tags">${promo ? '<span class="indicator promo">Promo</span>' : ""}<span class="indicator ${indicator.toLowerCase()}">${indicator}</span></span></div><div class="prices">${states.map((state) => { const priceIndicator = prices.get(state.entity_id); return `<div class="price"><span class="label">${this.escape(this.priceField(state))}</span><span class="value">$${this.escape(state.state)}</span><svg viewBox="0 0 100 18" preserveAspectRatio="none" data-entity="${state.entity_id}"><polyline></polyline></svg><span class="indicator ${priceIndicator.toLowerCase()}">${priceIndicator}</span></div>`; }).join("")}</div></article>`;
+    }).join("")}</div></section>`).join("") || '<div class="empty">No pricing sensors found.</div>';
     this.loadHistory();
   }
 
@@ -83,16 +92,20 @@ class GitHubCopilotPricingPanel extends HTMLElement {
     }));
     const fields = new Set([...averages.values()].flatMap((prices) => [...prices.keys()]));
     const benchmarks = new Map([...fields].map((field) => [field, [...averages.values()].map((prices) => prices.get(field)).filter(Number.isFinite).sort((a, b) => a - b)]));
-    return new Map([...averages].map(([key, prices]) => {
-      const ranks = [...prices].map(([field, price]) => {
+    const rank = (field, price) => {
         const values = benchmarks.get(field);
         const lower = values.filter((value) => value < price).length;
         const equal = values.filter((value) => value === price).length;
         return values.length < 2 ? 0.5 : (lower + (equal - 1) / 2) / (values.length - 1);
-      });
+    };
+    const label = (score) => score < 1 / 3 ? "Cheap" : score > 2 / 3 ? "Expensive" : "Average";
+    const overall = new Map([...averages].map(([key, prices]) => {
+      const ranks = [...prices].map(([field, price]) => rank(field, price));
       const score = ranks.reduce((sum, rank) => sum + rank, 0) / ranks.length;
-      return [key, score < 1 / 3 ? "Cheap" : score > 2 / 3 ? "Expensive" : "Average"];
+      return [key, label(score)];
     }));
+    const prices = new Map([...models.values()].flatMap((states) => states.map((state) => [state.entity_id, label(rank(this.priceField(state), Number(state.state)))])));
+    return { overall, prices };
   }
 
   async loadHistory() {
@@ -114,7 +127,7 @@ class GitHubCopilotPricingPanel extends HTMLElement {
     const values = series.map((point) => Number(point.state)).filter(Number.isFinite);
     if (values.length < 2) return;
     const min = Math.min(...values), span = Math.max(...values) - min || 1;
-    chart.querySelector("polyline").setAttribute("points", values.map((value, index) => `${index * 100 / (values.length - 1)},${23 - (value - min) * 22 / span}`).join(" "));
+    chart.querySelector("polyline").setAttribute("points", values.map((value, index) => `${index * 100 / (values.length - 1)},${17 - (value - min) * 16 / span}`).join(" "));
   }
 
   escape(value) {
