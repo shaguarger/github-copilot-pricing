@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import voluptuous as vol
-
 from homeassistant import config_entries
 
 from .const import (
@@ -50,14 +49,11 @@ class GitHubCopilotPricingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @config_entries.callback
     def async_get_options_flow(config_entry):
         """Return the options flow."""
-        return GitHubCopilotPricingOptionsFlow(config_entry)
+        return GitHubCopilotPricingOptionsFlow()
 
 
 class GitHubCopilotPricingOptionsFlow(config_entries.OptionsFlow):
     """Handle options."""
-
-    def __init__(self, config_entry):
-        self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
         """Manage options."""

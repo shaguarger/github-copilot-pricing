@@ -1,16 +1,16 @@
 """Data coordinator for GitHub Copilot Pricing."""
 from __future__ import annotations
 
-from datetime import timedelta
 import logging
 import re
+from datetime import timedelta
 from typing import Any
 
 import aiohttp
 import yaml
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
@@ -118,6 +118,7 @@ class GitHubCopilotPricingCoordinator(
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=entry,
             name="GitHub Copilot Pricing",
             update_interval=timedelta(hours=hours),
         )
@@ -198,19 +199,14 @@ class GitHubCopilotPricingCoordinator(
 
     async def _async_update_data(self) -> dict[str, dict[str, Any]]:
         """Fetch the current pricing."""
-        timeout = aiohttp.ClientTimeout(total=30)
-
         try:
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(
-                    PRICING_URL,
-                    headers={
-                        "Accept": "text/plain",
-                        "User-Agent": "Home Assistant GitHub Copilot Pricing",
-                    },
-                ) as response:
-                    response.raise_for_status()
-                    content = await response.text()
+            async with async_get_clientsession(self.hass).get(
+                PRICING_URL,
+                headers={"Accept": "text/plain"},
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as response:
+                response.raise_for_status()
+                content = await response.text()
 
             raw = yaml.safe_load(content)
             data = normalize_pricing(raw)

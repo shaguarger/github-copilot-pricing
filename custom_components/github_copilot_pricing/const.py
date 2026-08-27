@@ -1,8 +1,6 @@
 """Constants for GitHub Copilot Pricing."""
 from __future__ import annotations
 
-from datetime import timedelta
-
 DOMAIN = "github_copilot_pricing"
 
 CONF_SCAN_INTERVAL = "scan_interval"
@@ -33,8 +31,6 @@ ATTR_NOTES = "notes"
 ATTR_PRICE_UNIT = "price_unit"
 ATTR_SOURCE = "source"
 ATTR_SOURCE_URL = "source_url"
-ATTR_LAST_UPDATED = "last_updated"
-
 PRICE_FIELDS = (
     "input",
     "cached_input",
@@ -48,5 +44,3 @@ PRICE_NAMES = {
     "cache_write": "Cache write",
     "output": "Output",
 }
-
-UPDATE_INTERVAL = timedelta(hours=DEFAULT_SCAN_INTERVAL_HOURS)

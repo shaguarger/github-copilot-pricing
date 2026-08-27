@@ -75,3 +75,20 @@ def test_long_context_rows_have_distinct_keys():
         "tier": "Long context",
     }
     assert pricing_key(base) != pricing_key(long_context)
+
+
+def test_current_github_pricing_schema():
+    """Keep GitHub's current source shape covered without network access."""
+    raw = [
+        {
+            "model": "Example",
+            "provider": "openai",
+            "tier": "Default",
+            "threshold": "Not applicable",
+            "input": "$1.00",
+            "cached_input": "$0.10",
+            "cache_write": "Not applicable",
+            "output": "$2.00",
+        }
+    ]
+    assert len(normalize_pricing(raw)) == 1
