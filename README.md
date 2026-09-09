@@ -78,6 +78,8 @@ If a pricing row disappears, its entity remains in Home Assistant but becomes un
 
 If GitHub changes a price, the existing entity keeps its identity and simply reports the new value.
 
+Promo footnotes on model names (for example `GPT-5.6 Sol[^gpt-56-sol-promo]`) do not change an entity's identity. When a promotion starts or ends, the existing entity keeps its entity ID and statistics, reports the new price, and updates its `promotion` attribute.
+
 The integration also fires the Home Assistant event `github_copilot_pricing_changed`
 when models are added/removed or a published price changes. The event contains a
 `changes` array with the old and new values where applicable.

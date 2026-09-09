@@ -103,9 +103,20 @@ def test_current_github_pricing_schema():
 
 
 def test_model_footnote_does_not_change_pricing_key():
-    source = "GPT-5.6 Sol[^gpt-56-sol-promo]"
-    data = normalize_pricing(
-        [{"model": source, "provider": "openai", "input": "$2.00"}]
+    promo = normalize_pricing(
+        [
+            {
+                "model": "GPT-5.6 Sol[^gpt-56-sol-promo]",
+                "provider": "openai",
+                "input": "$1.00",
+            }
+        ]
     )
-    assert next(iter(data)) == f"openai|{source}|default|not_applicable"
-    assert next(iter(data.values()))["model"] == "GPT-5.6 Sol"
+    regular = normalize_pricing(
+        [{"model": "GPT-5.6 Sol", "provider": "openai", "input": "$2.00"}]
+    )
+    assert next(iter(promo)) == next(iter(regular))
+    assert next(iter(promo)) == "openai|GPT-5.6 Sol|default|not_applicable"
+    assert next(iter(promo.values()))["model"] == "GPT-5.6 Sol"
+    assert next(iter(promo.values()))["promotion"] == "gpt-56-sol-promo"
+    assert next(iter(regular.values()))["promotion"] is None

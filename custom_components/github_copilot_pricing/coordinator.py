@@ -111,8 +111,9 @@ def normalize_pricing(raw: Any) -> dict[str, dict[str, Any]]:
             "output": parse_price(row.get("output")),
         }
 
-        # Keep keys based on GitHub's source value so existing entity IDs stay stable.
-        key = pricing_key({**item, "model": str(model)})
+        # Key on the footnote-stripped model name so a row keeps one stable
+        # identity (and entity ID) when a promo footnote is added or removed.
+        key = pricing_key(item)
         result[key] = item
 
     if not result:
